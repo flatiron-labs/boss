@@ -10,5 +10,3 @@ module Bot
     end
   end
 end
-
-Bot::App.instance.run

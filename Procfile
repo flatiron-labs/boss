@@ -1,1 +1,1 @@
-web: ruby bot.rb
+web: rackup
