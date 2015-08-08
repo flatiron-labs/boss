@@ -48,4 +48,10 @@ module Bot
       client.message text: "#{user} lost a life. (Karma: #{karma_count})", channel: data.channel
    end
   end
+
+  class Swanson < SlackRubyBot::Commands::Base
+    match /boss swanson me/ do |client, data, _match|
+      send_message_with_gif(client, data.channel, "", "ron swanson")
+    end
+  end
 end
