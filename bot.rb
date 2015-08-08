@@ -64,4 +64,18 @@ module Bot
       send_message_with_gif(client, data.channel, "", "table flip")
     end
   end
+
+  class Text < SlackRubyBot::Commands::Base
+    # Set phone number
+    match /boss set phone (\d+)\z/ do |client, data, _match|
+      binding.pry
+      input = _match[1]
+      user_id = data["user"]
+      user = "@" + Slack::Web::Client.new.users_info(:user => "#{user_id}")["user"]["name"]
+
+      REDIS_CONN.set("#{user}_phone_number", "#{input}")
+      phone_number = REDIS_CONN.get("#{user}_phone_number")
+      client.message text: "#{user}'s phone number has been set as: #{phone_number}", channel: data.channel
+   end
+  end
 end
