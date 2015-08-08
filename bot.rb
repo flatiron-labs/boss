@@ -92,11 +92,14 @@ module Bot
       from_user = "@" + Slack::Web::Client.new.users_info(:user => "#{from_user_id}")["user"]["name"]
       to_user = "@" + Slack::Web::Client.new.users_info(:user => "#{to_user_id}")["user"]["name"]
       to_number = REDIS_CONN.get("#{to_user}_phone_number")
-      message = "#{from_user} has sent you a message through Slack: " + _match[2]
-
-      twilio_client = ::Twilio::REST::Client.new(ENV["TWILIO_SID"], ENV["TWILIO_TOKEN"])
-      twilio_client.messages.create(from: ENV["TWILIO_NUMBER"], to: to_number, body: message)
-      client.message text: "Success! #{from_user}, your text has been sent to #{to_user}.", channel: data.channel
+      if to_number == nil
+        client.message text: "Failure! #{from_user}, tell #{to_user} to set their phone number in Boss, via `boss set phone`.", channel: data.channel
+      else
+        message = "#{from_user} has sent you a message through Slack: " + _match[2]
+        twilio_client = ::Twilio::REST::Client.new(ENV["TWILIO_SID"], ENV["TWILIO_TOKEN"])
+        twilio_client.messages.create(from: ENV["TWILIO_NUMBER"], to: to_number, body: message)
+        client.message text: "Success! #{from_user}, your text has been sent to #{to_user}.", channel: data.channel
+      end
     end
   end
 end
