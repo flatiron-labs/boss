@@ -28,11 +28,14 @@ module Bot
     # Add karma
     match /(\S+[^+:\s])[: ]*\+\+(\s|$)/ do |client, data, _match|
       mentioner = data["user"]
-      user_to_karma = _match[1]
-      if user_to_karma.include?(mentioner)
+      input = (_match[1]).delete!("<>").delete!("@")
+      user_to_karma = "@" + Slack::Web::Client.new.users_info(:user => "#{input}")["user"]["name"]
+
+      if input.include?(mentioner)
         send_message_with_gif(client, data.channel, "Aren't you a cocky person, #{user_to_karma}!", "nuh uh uh")
       else
-        REDIS_CONN.incr("#{user_to_karma}_karma")
+        karma_count_int = REDIS_CONN.get("#{user_to_karma}_karma").to_i
+        REDIS_CONN.set("#{user_to_karma}_karma", "#{karma_count_int + 1}")
         karma_count = REDIS_CONN.get("#{user_to_karma}_karma")
         client.message text: "#{user_to_karma} is on the rise! (Karma: #{karma_count})", channel: data.channel
       end
@@ -40,7 +43,9 @@ module Bot
 
     # Remove karma
     match /(\S+[^+:\s])[: ]*\-\-(\s|$)/ do |client, data, _match|
-      user = _match[1]
+      input = (_match[1]).delete!("<>").delete!("@")
+      user = "@" + Slack::Web::Client.new.users_info(:user => "#{input}")["user"]["name"]
+
       karma_count_int = REDIS_CONN.get("#{user}_karma").to_i
       REDIS_CONN.set("#{user}_karma", "#{karma_count_int - 1}")
       karma_count = REDIS_CONN.get("#{user}_karma")
