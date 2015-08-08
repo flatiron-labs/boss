@@ -1,4 +1,5 @@
 require 'slack-ruby-bot'
+require 'phony'
 
 if ENV["RACK_ENV"] != "production"
   require 'pry'
@@ -67,13 +68,18 @@ module Bot
 
   class Text < SlackRubyBot::Commands::Base
     # Set phone number
-    match /boss set phone (\d+)\z/ do |client, data, _match|
-      binding.pry
-      input = _match[1]
+    match /boss set phone (\S+)\z/ do |client, data, _match|
+      match_input = _match[1]
+      if match_input.include?("tel")
+        input = match_input.split("|").last.delete!(">")
+      else
+        input = match_input
+      end
       user_id = data["user"]
       user = "@" + Slack::Web::Client.new.users_info(:user => "#{user_id}")["user"]["name"]
 
-      REDIS_CONN.set("#{user}_phone_number", "#{input}")
+      formatted_number = "+1" + Phony.normalize(input)
+      REDIS_CONN.set("#{user}_phone_number", "#{formatted_number}")
       phone_number = REDIS_CONN.get("#{user}_phone_number")
       client.message text: "#{user}'s phone number has been set as: #{phone_number}", channel: data.channel
    end
