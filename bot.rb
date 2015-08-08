@@ -6,7 +6,7 @@ end
 
 module Bot
 
-  REDIS_CONN = Redis.new(:url => ENV["REDISTOGO_URL"] || "redis://localhost:6379")
+  REDIS_CONN = Redis.new(:url => ENV["REDIS_URL"] || "redis://localhost:6379")
 
   class App < SlackRubyBot::App
   end
@@ -31,7 +31,6 @@ module Bot
       user_to_karma = _match[1]
       if user_to_karma.include?(mentioner)
         send_message_with_gif(client, data.channel, "Aren't you a cocky person, #{user_to_karma}!", "nuh uh uh")
-        #client.message text: , channel: data.channel
       else
         REDIS_CONN.incr("#{user_to_karma}_karma")
         karma_count = REDIS_CONN.get("#{user_to_karma}_karma")
