@@ -18,7 +18,7 @@ module Bot
   end
 
   class Gif < SlackRubyBot::Commands::Base
-    match /boss gif me (\S+)\z/ do |client, data, _match|
+    match /boss gif me (\D+)\z/ do |client, data, _match|
       keyword = _match[1]
       send_message_with_gif(client, data.channel, "", keyword)
     end
