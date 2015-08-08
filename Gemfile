@@ -5,6 +5,7 @@ gem 'puma'
 gem 'sinatra'
 gem 'redis'
 gem 'phony'
+gem 'twilio-ruby'
 
 group :development, :test do
   gem 'pry'

@@ -1,5 +1,6 @@
 require 'slack-ruby-bot'
 require 'phony'
+require 'twilio-ruby'
 
 if ENV["RACK_ENV"] != "production"
   require 'pry'
@@ -82,6 +83,20 @@ module Bot
       REDIS_CONN.set("#{user}_phone_number", "#{formatted_number}")
       phone_number = REDIS_CONN.get("#{user}_phone_number")
       client.message text: "#{user}'s phone number has been set as: #{phone_number}", channel: data.channel
-   end
+    end
+
+    # Text someone
+    match /boss text (\S+): (\S+)\z/ do |client, data, _match|
+      from_user_id = data["user"]
+      to_user_id = (_match[1]).delete!("<>").delete!("@")
+      from_user = "@" + Slack::Web::Client.new.users_info(:user => "#{from_user_id}")["user"]["name"]
+      to_user = "@" + Slack::Web::Client.new.users_info(:user => "#{to_user_id}")["user"]["name"]
+      to_number = REDIS_CONN.get("#{to_user}_phone_number")
+      message = "#{from_user} has sent you a message through Slack: " + _match[2]
+
+      twilio_client = ::Twilio::REST::Client.new(ENV["TWILIO_SID"], ENV["TWILIO_TOKEN"])
+      twilio_client.messages.create(from: ENV["TWILIO_NUMBER"], to: to_number, body: message)
+      client.message text: "Success! #{from_user}, your text has been sent to #{to_user}.", channel: data.channel
+    end
   end
 end
