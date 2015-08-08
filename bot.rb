@@ -53,4 +53,10 @@ module Bot
       send_message_with_gif(client, data.channel, "", "ron swanson")
     end
   end
+
+  class TableFlip < SlackRubyBot::Commands::Base
+    command 'tflip' do |client, data, _match|
+      send_message_with_gif(client, data.channel, "", "table flip")
+    end
+  end
 end
